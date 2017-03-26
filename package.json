@@ -1,0 +1,21 @@
+{
+  "name": "web-dev-server-example-chat",
+  "version": "1.0.0",
+  "description": "Chat example with session authentication.",
+  "homepage": "https://github.com/web-dev-server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/web-dev-server/example-chat.git"
+  },
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Tom Flídr",
+    "email": "tomflidr@gmail.com",
+    "url": "https://github.com/tomFlidr"
+  },
+  "main": "run-server.js",
+  "dependencies": {
+    "web-dev-server": "~1.0.4",
+    "ws": "~1.1.1"
+  }
+}

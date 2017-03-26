@@ -1,0 +1,209 @@
+html,body,select,option,label,td,th{
+	font-family:Arial,helvetica;
+	font-size:14px;
+	line-height:1.4em;
+}
+
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3,
+h4, h5, h6, pre, code, form, field set, legend,
+textarea, p, blockquote, th, td {
+	margin:0;
+	adding:0;
+	-webkit-appearance:none;
+}
+a{
+  color:#2982e5;
+  text-decoration:none;
+}
+a:hover,
+a:focus
+a:active {
+	color:#f60;
+}
+body {
+	background:#efeff4;
+}
+
+form.loginbox{
+	display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 64px;
+    margin: -50px 0 0 -150px;
+}
+form.loginbox label{
+	display: block;
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+form.loginbox input[type=email]{
+	width: 160px;
+    float: left;
+    padding: 5px 10px;
+    font-size: 20px;
+    margin: 0 10px 0 0;
+    border-radius: 5px;
+}
+form.loginbox button{
+	float: right;
+    padding: 5px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+.chatbox{
+    position: absolute;
+	width:100%;
+	height:100%;
+}
+.chatbox header{
+	background: #3d3d3d;
+    height: 4%;
+    width: 100%;
+    font-size: 12px;
+    line-height: 28px;
+    color: #fff;
+    position: fixed;
+    z-index: 9999;
+}
+.chatbox header b{
+	text-align:left;
+	margin-left:10px;
+}
+.chatbox header span {
+	float:right;
+	margin-right:10px;
+}
+.chatbox header a {
+	float:right;
+	margin-right:10px;
+	color:#fff;
+	border-bottom: 1px solid white;
+	text-decoration: none;
+	line-height: 16px;
+	display: inline-block;
+	margin-top: 5px;
+}
+.online-users{
+	background: #EFEFF4;
+    font-size: 12px;
+    margin-left: 10px;
+    color: #666;
+    position: fixed;
+    top: 5%;
+    z-index: 999;
+}
+.messages {
+	height: 77%;
+    position: absolute;
+    width: 97%;
+    top: 8%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 10px;
+}
+.message.notify{
+	clear:both;
+	margin: 5px 0;
+	color:#888;
+	font-size: 10px;
+	font-style: italic;
+	text-align: center;
+}
+.message.content.user{
+	float: right;
+    text-align: right;
+}
+.message.content.other{
+	float: left;
+    text-align: left;
+}
+.message.content{
+	clear:both;
+	margin: 5px 0;
+}
+.message.content div{
+	max-width: 225px;
+    position: relative;
+    display: inline-block;
+    padding: 8px;
+    text-align: left;
+    border-radius: 10px;
+    color: #fff;
+    vertical-align: top;
+    word-break: break-all;
+}
+.message.content.user div{
+    box-shadow: inset 0 0 1px #007aff;
+    background-color: #007aff;
+}
+.message.content.other div{
+    box-shadow: inset 0 0 1px #00a617;
+    background-color: #00a617;
+}
+.message.content div:before{
+    content: "";
+    position: absolute;
+    top: 4px;
+    width: 0;
+    height: 0;
+    border-top: solid transparent;
+    border-bottom: 4px solid transparent;
+}
+.message.content.user div:before{
+    right: -5px;
+    border-left: 7px solid #007aff;
+}
+.message.content.other div:before{
+    left: -5px;
+    border-right: 7px solid #00a617;
+}
+.message.content span{
+	font-weight: normal;
+    font-size: 10px;
+    color: #f60;
+    overflow: hidden;
+    display: block;
+}
+.message.notify span{
+	display: hidden;
+}
+form.input-box{
+	position: fixed;
+	height: 16%;
+    bottom: 0;
+    width: 100%;
+    background: #fff;
+    top: 85%;
+    border-top: 1px solid #aaa;
+}
+form.input-box input[type=text]{
+	padding: 5px 10px;
+    width: 80%;
+    margin: 20px 0 0 20px;
+    border-radius: 4px;
+    border: 1px solid #aaa;
+}
+form.input-box button{
+	width: 13%;
+    padding: 5px;
+    float: right;
+    margin: 20px 20px 0 0;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+}
+form.input-box .recepients{
+	margin: 10px 20px 0 20px;
+}
+form.input-box .recepients div{
+	float:left;
+	margin-right:20px;
+}
+form.input-box .recepients input[type=radio]{
+	
+}
+form.input-box .recepients label{
+	
+}

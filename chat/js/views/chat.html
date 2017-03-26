@@ -1,0 +1,46 @@
+<!-- div.chatbox>(header>b+span+a>span)+div.info-panel+div.messages>div.message>div+span -->
+<div class="chatbox">
+	<header>
+		<b>Multiple user chat</b>
+		<span>{{username}}</span>
+		<a href="" ng-click="logoutHandler()">Odhlásit</a>
+	</header>
+	<div class="online-users">
+		Uživatelé online: {{users | userslist}} ({{usersCount}})
+	</div>
+	<div class="messages">
+		<div 
+			ng-repeat="msg in messages track by msg.id" 
+			class="message
+				{{msg.type}} {{msg.isMe?'user':'other'}}
+			">
+			<div>{{msg.content}}</div>
+			<span ng-show="msg.type == 'content' && !msg.isMe">
+				{{msg.username}} 
+				{{msg.recepient == 'all' ? '(všem)' : '(pouze Vám)' }}
+			</span>
+		</div>
+	</div>
+	<!-- form.input-box>input+button+div.recepients>label+input -->
+	<form ng-submit="submitHandler()" class="input-box">
+		
+		<input ng-model="content" type="text" placeholder="Vepište zprávu" />
+		<button type="submit">Odeslat</button>
+		
+		<div class="recepients">
+			
+			<div>
+				<input id="all" type="radio" name="rcp" value="all" checked="checked" />
+				<label for="all">Poslat všem</label>
+			</div>
+			
+			<div ng-repeat="recepient in recepients track by recepient.userid">
+				<div ng-show="recepient.userid != userid">
+					<input id="{{recepient.userid}}" type="radio" name="rcp" value="{{recepient.userid}}" />
+					<label for="{{recepient.userid}}">{{recepient.username}}</label>
+				</div>
+			</div>
+			
+		</div>
+	</form>
+</div>

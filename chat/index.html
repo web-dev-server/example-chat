@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en-US" ng-app="App">
+    <head>
+        <meta charset="utf-8" />
+        <title>Multi user Chat</title>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+        
+        <!--  libraries: -->
+        <script src="js/libs/angular.js"></script>
+		<script src="js/libs/angular-ui-router.js"></script>
+		<script src="js/libs/class.min.js"></script>
+		<script src="js/libs/socket-wrapper.js"></script>
+
+		<!-- chat scripts -->
+		<script src="js/app.js"></script>
+		<script src="js/controllers/base.js"></script>
+		<script src="js/controllers/login.js"></script>
+		<script src="js/controllers/chat.js"></script>
+		<script src="js/factories/chat.js"></script>
+		<script src="js/filters/userslist.js"></script>
+		
+    </head>
+    <body>
+    	<ui-view></ui-view>
+    </body>
+</html>
