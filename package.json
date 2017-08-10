@@ -1,11 +1,11 @@
 {
-  "name": "web-dev-server-example-chat",
+  "name": "example-chat-angular-1",
   "version": "1.0.0",
   "description": "Chat example with session authentication.",
-  "homepage": "https://github.com/web-dev-server",
+  "homepage": "https://github.com/web-dev-server/example-chat-angular-1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/web-dev-server/example-chat.git"
+    "url": "https://github.com/web-dev-server/example-chat-angular-1.git"
   },
   "license": "BSD-3-Clause",
   "author": {
