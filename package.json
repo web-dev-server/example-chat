@@ -1,6 +1,6 @@
 {
   "name": "web-dev-server-example-chat-angular-1",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Chat example with session authentication in Angular 1.",
   "homepage": "https://github.com/web-dev-server/example-chat-angular-1",
   "repository": {
@@ -15,7 +15,7 @@
   },
   "main": "run-server.js",
   "dependencies": {
-    "web-dev-server": "~1.1.0",
-    "ws": "~1.1.1"
+    "web-dev-server": "^1.1.1",
+    "ws": "^3.3.2"
   }
 }
