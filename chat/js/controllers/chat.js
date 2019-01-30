@@ -2,7 +2,7 @@ app.controller('Chat', [
 	'$scope', '$controller', '$rootScope', 'chatService', '$element', '$http',
 	function($, $controller, $rootScope, chatService, $element, $http) {
 	
-	// převezmutí funkcí z Base ctrl
+	// merge functions with Base ctrl
 	angular.extend(this, $controller('Base', {$scope: $}));
 	
 	$.constructor = function () {
@@ -42,11 +42,21 @@ app.controller('Chat', [
 			.onLogout($.onLoginAndLogoutHandler)
 			.onChatting($.onChattingHandler)
 			.login($.userid, $.username);
+		window.addEventListener("unload", function(e) {
+			if (chatService)
+				chatService.logout();
+		}.bind(this));
 	};
 	
 	$.submitHandler = function () {
-		// pozor na radio inputy - nejsou vhodné pro ng-model:
-		$.currentRcp = $.chatForm.rcp.value;
+		// radios inputs are not good choise for ng-model:
+		var radioButtons = $.chatForm.querySelectorAll('input[type=radio]'),
+			checkedRadio = null;
+		for (var i = 0, l = radioButtons.length; i < l; i++) {
+			if (radioButtons[i].checked)
+				checkedRadio = radioButtons[i];
+		}
+		$.currentRcp = checkedRadio ? checkedRadio.value : 'all';
 		
 		chatService.chatting({
 			userid: $.userid,

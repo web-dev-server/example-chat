@@ -11,7 +11,7 @@ ChatService.prototype = {
 		this._url = url || this._url;
 		this.webSocket = null;
 		this.webSocket = new SocketWrapper(this._url);
-		// očekávám události od serveru:
+		// expecting events from server side:
 		this.webSocket.bind('login', function (data) {
 			this._loginCallback(data);
 		}.bind(this));

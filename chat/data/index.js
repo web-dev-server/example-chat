@@ -25,6 +25,7 @@ App.prototype = {
 		}.bind(this));
 	},
 	_webSocketConnectionHandler: function (ws, req) {
+		ws.upgradeReq = req; // necessary for WebSocketServer 3.0.0+, https://github.com/websockets/ws/pull/1099
 		var sessionId = req.session.id;
 		if (typeof(this._allowedSessionIds[sessionId]) == 'undefined') {
 			console.log("Connected not authorized user with session id: " + sessionId);
@@ -176,14 +177,12 @@ App.prototype = {
 			eventName: eventName,
 			data: data
 		});
-		var client;
-		for (var i = 0, l = this._wss.clients.length; i < l; i += 1) {
-			client = this._wss.clients[i];
+		
+		this._wss.clients.forEach(function (client) {
 			if (client.upgradeReq.sessionID == targetSessionId) {
 				client.send(responseStr);
-				break;
 			}
-		}
+		}.bind(this));
 	},
 	_sendToCurrentClient: function (eventName, data, ws) {
 		var responseStr = JSON.stringify({

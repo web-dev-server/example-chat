@@ -3,10 +3,10 @@
 	<header>
 		<b>Multiple user chat</b>
 		<span>{{username}}</span>
-		<a href="" ng-click="logoutHandler()">Odhlásit</a>
+		<a href="" ng-click="logoutHandler()">Logout</a>
 	</header>
 	<div class="online-users">
-		Uživatelé online: {{users | userslist}} ({{usersCount}})
+		Users online: {{users | userslist}} ({{usersCount}})
 	</div>
 	<div class="messages">
 		<div 
@@ -17,21 +17,21 @@
 			<div>{{msg.content}}</div>
 			<span ng-show="msg.type == 'content' && !msg.isMe">
 				{{msg.username}} 
-				{{msg.recepient == 'all' ? '(všem)' : '(pouze Vám)' }}
+				{{msg.recepient == 'all' ? '(to all)' : '(only to you)' }}
 			</span>
 		</div>
 	</div>
 	<!-- form.input-box>input+button+div.recepients>label+input -->
 	<form ng-submit="submitHandler()" class="input-box">
 		
-		<input ng-model="content" type="text" placeholder="Vepište zprávu" />
-		<button type="submit">Odeslat</button>
+		<input ng-model="content" type="text" placeholder="Message text" />
+		<button type="submit">Send</button>
 		
 		<div class="recepients">
 			
 			<div>
 				<input id="all" type="radio" name="rcp" value="all" checked="checked" />
-				<label for="all">Poslat všem</label>
+				<label for="all">For all users</label>
 			</div>
 			
 			<div ng-repeat="recepient in recepients track by recepient.userid">
