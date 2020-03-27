@@ -191,20 +191,21 @@ App.prototype = {
 		});
 		ws.send(responseStr);
 	},
-	httpRequestHandler: function (request, response, callback) {
-		this._completeWholeRequestInfo(request, function (requestInfo) {
-			this._authorizeHttpRequest(requestInfo, response, callback);
+	HandleHttpRequest: function (request, response) {
+		return new Promise(function (resolve, reject) {
+			this._completeWholeRequestInfo(request, function (requestInfo) {
+				this._authorizeHttpRequest(requestInfo, response, resolve);
+			}.bind(this));
 		}.bind(this));
 	},
-	_authorizeHttpRequest: function (requestInfo, response, callback) {
+	_authorizeHttpRequest: function (requestInfo, response, resolve) {
 		var request = requestInfo.request;
 		var postData = null;
 		try {
 			postData = JSON.parse(requestInfo.textBody);
 		} catch (e) {
 			response.send('{"success":false,"message":"Bad user input: ' + e.message.replace(/"/g, "&quot;") + '"}');
-			callback();
-			return;
+			return resolve();
 		}
 		
 		// HERE IS PERFECT PLACE TO GET ANY CREDENTIALS FROM DATABASE:
@@ -226,7 +227,7 @@ App.prototype = {
 			response.send('{"success":false,"message":"Wrong password."}');
 		}
 		
-		callback();
+		resolve();
 	},
 	_completeWholeRequestInfo: function (request, callback) {
         var reqInfo = {

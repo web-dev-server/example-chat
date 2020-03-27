@@ -1,6 +1,6 @@
 # Example - Chat
 
-[![Latest Stable Version](https://img.shields.io/badge/Stable-v1.3.1-brightgreen.svg?style=plastic)](https://github.com/web-dev-server/example-chat/releases)
+[![Latest Stable Version](https://img.shields.io/badge/Stable-v2.1.0-brightgreen.svg?style=plastic)](https://github.com/web-dev-server/example-chat-angular-1/releases)
 [![License](https://img.shields.io/badge/Licence-BSD-brightgreen.svg?style=plastic)](https://github.com/web-dev-server/example-chat-angular-1/blob/master/LICENCE.md)
 
 Chat example with session authentication. Client scripts witten with Angular 1.
@@ -15,7 +15,7 @@ npm update
 
 ## Usage
 ```shell
-node run-server.js
+node server.js
 ```
 - open your first web browser on:
   - http://localhost:8000/chat/
