@@ -1,46 +1,48 @@
 var WebSocketServer = require('ws').Server;
+var WebDevServer = require("web-dev-server");
+//var WebDevServer = require("../../../web-dev-server/build/lib/Server");
 
-var App = function (httpServer, expressServer, sessionParser, request, response) {
-	this._init(httpServer, expressServer, sessionParser, request, response);
+
+var App = function () {
+	this.wsServer = null;
+	this.onlineUsers = {};
+	this.onlineUsersCount = 0;
+	this.allMessages = [];
 };
 App.prototype = {
-	_allowedSessionIds: {},
-	_httpServer: null,
-	_expressServer: null,
-	_wss: null,
-	_sessionParser: null,
-	_onlineUsers: {},
-	_onlineUsersCount: 0,
-	_allMessages: [],
-	_init: function (httpServer, expressServer, sessionParser, request, response) {
-		this._httpServer = httpServer;
-		this._expressServer = expressServer;
-		this._sessionParser = sessionParser;
+	Start (server, firstRequest, firstResponse) {
 		console.log("Initializing websocket serverving:");
-		this._wss = new WebSocketServer({ server: httpServer });
-		this._wss.on('connection', function (ws, req) {
-			this._sessionParser(
-				req, {}, this._webSocketConnectionHandler.bind(this, ws, req)
-			);
+		this.wsServer = new WebSocketServer({ server: server.GetHttpServer() });
+		this.wsServer.on('connection', function (ws, req) {
+			this.wsHandleConnection(ws, req)
 		}.bind(this));
 	},
-	_webSocketConnectionHandler: function (ws, req) {
-		ws.upgradeReq = req; // necessary for WebSocketServer 3.0.0+, https://github.com/websockets/ws/pull/1099
-		var sessionId = req.session.id;
-		if (typeof(this._allowedSessionIds[sessionId]) == 'undefined') {
-			console.log("Connected not authorized user with session id: " + sessionId);
-			ws.close(4000, 'Not authorized session.');
-			
-		} else if (this._allowedSessionIds[sessionId]){
+	Stop (server) {
+		console.log("Closing websocket serverving:");
+		this.wsServer.close(function () {
+			server.Stop();
+		}.bind(this));
+	},
+	wsHandleConnection: function (ws, req) {
+		WebDevServer.Session.Start(req).then(function (session) {
+			var sessionId = session.GetId();
+			var sessionNamespace = session.GetNamespace("chat");
+				
+			if (!sessionNamespace.authenticated) {
+				console.log("Connected not authorized user with session id: " + sessionId);
+				ws.close(4000, 'Not authorized session.');
+				return;
+			}
+
 			console.log("Connected authorized user with session id: " + sessionId);
-			
-			this._sendToCurrentClient('connection', {
+
+			this.sendToCurrentClient('connection', {
 				message: 'Welcome, you are connected.'
 			}, ws);
 			
 			ws.on('message', function (str, bufferCont) {
 				try {
-					this._webSocketOnMessage(str, bufferCont, sessionId, ws);
+					this.webSocketOnMessage(str, bufferCont, sessionId, ws);
 				} catch (e) {
 					console.log(e, e.stack);
 				}
@@ -48,14 +50,15 @@ App.prototype = {
 			
 			ws.on('close', function () {
 				try {
-					this._webSocketOnClose(sessionId);
+					this.webSocketOnClose(sessionId);
 				} catch (e) {
 					console.log(e, e.stack);
 				}
 			}.bind(this));
-		}
+			
+		}.bind(this));
 	},
-	_webSocketOnMessage: function (str, bufferCont, sessionId, ws) {
+	webSocketOnMessage: function (str, bufferCont, sessionId, ws) {
 		
 		var sendedData = null;
 		try {
@@ -66,147 +69,158 @@ App.prototype = {
 			return;
 		}
 		
-		var eventName = sendedData.eventName;
-		var data = sendedData.data;
-		var userid = data.userid;
-		var username = data.username;
+		var eventName = sendedData.eventName,
+			data = sendedData.data,
+			userId = data.userId,
+			username = data.username;
 		
 		if (eventName == 'login') {
-			this._webSocketOnMessageEventLogin(data, userid, username, sessionId, ws);
+			this.webSocketOnMessageEventLogin(data, userId, username, sessionId, ws);
 		} else if (eventName == 'chatting') {
-			this._webSocketOnMessageEventChatting(data, userid, username, sessionId, ws);
+			this.webSocketOnMessageEventChatting(data, userId, username, sessionId, ws);
 		}
 	},
-	_webSocketOnMessageEventLogin: function (data, userid, username, sessionId, ws) {
-		if (typeof(this._onlineUsers[userid]) == 'undefined') {
-			this._onlineUsers[userid] = {
+	webSocketOnMessageEventLogin: function (data, userId, username, sessionId, ws) {
+		if (typeof(this.onlineUsers[userId]) == 'undefined') {
+			this.onlineUsers[userId] = {
 				sessionId: sessionId,
-				username: username
+				username: username,
+				ws: ws
 			};
-			this._updateOnlineUsersCount();
+			this.updateOnlineUsersCount();
 		}
 		
-		this._sendToAllClients('login', {
-			users: this._completeOnlineUsersForClient(), 
-			recepients: this._completeRecepientsForClient(),
-			usersCount: this._onlineUsersCount, 
-			userid: userid,
+		this.sendToAllClients('login', {
+			users: this.completeOnlineUsersForClient(), 
+			recepients: this.completeRecepientsForClient(),
+			usersCount: this.onlineUsersCount, 
+			userId: userId,
 			username: username,
-			messages: this._allMessages
+			messages: this.allMessages
 		});
 		
 		var joinMessage = {
 			type: 'notify',
 			content: username + ' joined the chat room',
-			userid: userid,
+			userId: userId,
 			username: username,
 			recepient: 'all',
-			id: this._allMessages.length
+			id: this.allMessages.length
 		}
-		this._allMessages.push(joinMessage);
-		this._sendToAllClients('chatting', joinMessage);
+		this.allMessages.push(joinMessage);
+		this.sendToAllClients('chatting', joinMessage);
 		
 		console.log(username + ' joined the chat room');
 	},
-	_webSocketOnMessageEventChatting: function (data, userid, username, sessionId, ws) {
-		var recepient = typeof(data.recepient) != 'undefined' ? data.recepient : 'all';
+	webSocketOnMessageEventChatting: function (data, userId, username, sessionId, ws) {
+		var recepient = typeof(data.recepient) != 'undefined' 
+			? data.recepient 
+			: 'all';
 			
 		// add unique message id:
 		data.type = 'content';
-		data.id = this._allMessages.length;
-		this._allMessages.push(data);
+		data.id = this.allMessages.length;
+		this.allMessages.push(data);
 		
 		if (recepient == 'all') {
-			this._sendToAllClients('chatting', data);
+			this.sendToAllClients('chatting', data);
 		} else {
-			var targetSessionId = typeof(this._onlineUsers[recepient]) != 'undefined' ? this._onlineUsers[recepient].sessionId : '';
-			this._sendToSingleClient('chatting', data, targetSessionId);
-			this._sendToCurrentClient('chatting', data, ws);
+			if (typeof(this.onlineUsers[recepient]) != 'undefined')
+				this.sendToSingleClient('chatting', data, this.onlineUsers[recepient].sessionId);
+			this.sendToCurrentClient('chatting', data, ws);
 		}
 		console.log(data.username + ': ' + data.content);
 	},
-	_webSocketOnClose: function (sessionId) {
+	webSocketOnClose: function (sessionId) {
 		// session id authorization boolean to false after user is disconnected
-		this._allowedSessionIds[sessionId] = false;
 		
-		var onlineUser = {}, userToDelete = {}, uidToDelete = '';
-		for (var uid in this._onlineUsers) {
-			onlineUser = this._onlineUsers[uid];
+		var onlineUser = {}, 
+			userToDelete = {}, 
+			uidToDelete = '';
+		for (var uid in this.onlineUsers) {
+			onlineUser = this.onlineUsers[uid];
 			if (sessionId != onlineUser.sessionId) continue;
 			userToDelete = onlineUser;
 			uidToDelete = uid;
 			break;
 		}
 		
-		delete this._onlineUsers[uidToDelete];
-		this._updateOnlineUsersCount();
+		delete this.onlineUsers[uidToDelete];
+		this.updateOnlineUsersCount();
 		
-		this._sendToAllClients('logout', {
-			users: this._completeOnlineUsersForClient(), 
-			recepients: this._completeRecepientsForClient(),
-			usersCount: this._onlineUsersCount, 
-			userid: userToDelete.userid,
+		this.sendToAllClients('logout', {
+			users: this.completeOnlineUsersForClient(), 
+			recepients: this.completeRecepientsForClient(),
+			usersCount: this.onlineUsersCount, 
+			userId: userToDelete.userId,
 			username: userToDelete.username,
-			messages: this._allMessages
+			messages: this.allMessages
 		});
 		
 		var leaveMessage = {
 			type: 'notify',
 			content: userToDelete.username + ' leave the chat room',
-			userid: userToDelete.userid,
+			userId: userToDelete.userId,
 			username: userToDelete.username,
 			recepient: 'all',
-			id: this._allMessages.length
+			id: this.allMessages.length
 		}
-		this._allMessages.push(leaveMessage);
-		this._sendToAllClients('chatting', leaveMessage);
+		this.allMessages.push(leaveMessage);
+		this.sendToAllClients('chatting', leaveMessage);
 		
 		console.log(onlineUser.username + ' exited the chat room');
 	},
-	_sendToAllClients: function (eventName, data) {
+	sendToAllClients: function (eventName, data) {
 		var responseStr = JSON.stringify({
 			eventName: eventName,
 			data: data
 		});
-		this._wss.clients.forEach(function (client) {
-			client.send(responseStr);
-		}.bind(this));
+		var onlineUser = {};
+		for (var userId in this.onlineUsers) {
+			onlineUser = this.onlineUsers[userId];
+			if (onlineUser.ws) 
+				onlineUser.ws.send(responseStr);
+		}
 	},
-	_sendToSingleClient: function (eventName, data, targetSessionId) {
+	sendToSingleClient: function (eventName, data, targetSessionId) {
 		var responseStr = JSON.stringify({
 			eventName: eventName,
 			data: data
 		});
-		
-		this._wss.clients.forEach(function (client) {
-			if (client.upgradeReq.sessionID == targetSessionId) {
-				client.send(responseStr);
+		var onlineUser = {};
+		for (var userId in this.onlineUsers) {
+			onlineUser = this.onlineUsers[userId];
+			if (onlineUser.sessionId === targetSessionId) {
+				if (onlineUser.ws) 
+					onlineUser.ws.send(responseStr);
+				break;
 			}
-		}.bind(this));
+		}
 	},
-	_sendToCurrentClient: function (eventName, data, ws) {
+	sendToCurrentClient: function (eventName, data, ws) {
 		var responseStr = JSON.stringify({
 			eventName: eventName,
 			data: data
 		});
 		ws.send(responseStr);
 	},
-	HandleHttpRequest: function (request, response) {
+	HttpHandle: function (request, response) {
 		return new Promise(function (resolve, reject) {
-			this._completeWholeRequestInfo(request, function (requestInfo) {
-				this._authorizeHttpRequest(requestInfo, response, resolve);
-			}.bind(this));
+			if (request.IsCompleted()) {
+				this.authorizeHttpRequest(request, response, resolve, reject);
+			} else {
+				request.GetBody().then(function (body) {
+					this.authorizeHttpRequest(request, response, resolve, reject);
+				}.bind(this));
+			}
 		}.bind(this));
 	},
-	_authorizeHttpRequest: function (requestInfo, response, resolve) {
-		var request = requestInfo.request;
-		var postData = null;
-		try {
-			postData = JSON.parse(requestInfo.textBody);
-		} catch (e) {
-			response.send('{"success":false,"message":"Bad user input: ' + e.message.replace(/"/g, "&quot;") + '"}');
-			return resolve();
-		}
+	authorizeHttpRequest: function (request, response, resolve, reject) {
+		var userId = String((+new Date) + Math.random()).replace('.','');
+		var passwordStr = request.GetParam('password', false);
+		
+		
+		
 		
 		// HERE IS PERFECT PLACE TO GET ANY CREDENTIALS FROM DATABASE:
 		
@@ -214,62 +228,49 @@ App.prototype = {
 		
 		
 		
-		
-		
-		
-		if (postData.password == '1234') {
+		if (passwordStr == '1234') {
 			// after session is authorized - set session id authorization boolean to true:
-			this._allowedSessionIds[request.session.id] = true;
-			request.session.userid = String((+new Date) + Math.random()).replace('.','');
-			request.session.save();
-			response.send('{"success":true,"message":"Password is correct.","userid":"' + request.session.userid + '"}');
+			WebDevServer.Session.Start(request, response).then(function(session) {
+				var sessionNamespace = session.GetNamespace("chat");
+
+				sessionNamespace.userId = userId
+				sessionNamespace.authenticated = true;
+				
+				response.SetBody(
+					'{"success":true,"message":"Password is correct.","userId":"' + userId + '"}'
+				).Send();
+				resolve();
+			}.bind(this));
 		} else {
-			response.send('{"success":false,"message":"Wrong password."}');
+			response.SetBody('{"success":false,"message":"Wrong password."}').Send();
+			resolve();
 		}
-		
-		resolve();
 	},
-	_completeWholeRequestInfo: function (request, callback) {
-        var reqInfo = {
-            url: request.url,
-            method: request.method,
-            headers: request.headers,
-            statusCode: request.statusCode,
-            textBody: ''
-        };
-        var bodyArr = [];
-        request.on('error', function (err) {
-            console.error(err);
-        }).on('data', function (chunk) {
-            bodyArr.push(chunk);
-        }).on('end', function () {
-            reqInfo.textBody = Buffer.concat(bodyArr).toString();
-            reqInfo.request = request;
-            callback(reqInfo);
-        }.bind(this));
-    },
-	_updateOnlineUsersCount: function () {
+	updateOnlineUsersCount: function () {
 		var i = 0;
-		for (var key in this._onlineUsers) {
-			if (typeof(this._onlineUsers[key]) != 'undefined' && typeof(this._onlineUsers[key].username) != 'undefined') i++;
+		for (var key in this.onlineUsers) {
+			if (
+				typeof(this.onlineUsers[key]) != 'undefined' && 
+				typeof(this.onlineUsers[key].username) != 'undefined'
+			) i++;
 		}
 		this._onlineUsersCount = i;
 	},
-	_completeRecepientsForClient: function () {
+	completeRecepientsForClient: function () {
 		var result = [], onlineUser = {};
-		for (var uid in this._onlineUsers) {
-			onlineUser = this._onlineUsers[uid];
+		for (var uid in this.onlineUsers) {
+			onlineUser = this.onlineUsers[uid];
 			result.push({
-				userid: uid,
+				userId: uid,
 				username: onlineUser.username
 			});
 		};
 		return result;
 	},
-	_completeOnlineUsersForClient: function () {
+	completeOnlineUsersForClient: function () {
 		var result = [];
-		for (var uid in this._onlineUsers) {
-			result.push(this._onlineUsers[uid].username);
+		for (var uid in this.onlineUsers) {
+			result.push(this.onlineUsers[uid].username);
 		}
 		return result;
 	}

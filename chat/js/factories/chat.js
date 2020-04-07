@@ -36,10 +36,10 @@ ChatService.prototype = {
 		this._logoutCallback = cb;
 		return this;
 	},
-	login: function (userid, username) {
+	login: function (userId, username) {
 		if (!this.isOpened) this.open();
 		this.webSocket.send('login', {
-			userid: userid,
+			userId: userId,
 			username: username
 		});
 		return this;
@@ -49,7 +49,7 @@ ChatService.prototype = {
 		this.webSocket.send('chatting', data);
 		return this;
 	},
-	logout: function (userid, username) {
+	logout: function (userId, username) {
 		this.webSocket.close(4000, 'Logout');
 		this.isOpened = false;
 		return this;

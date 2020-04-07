@@ -34,10 +34,10 @@
 				<label for="all">For all users</label>
 			</div>
 			
-			<div ng-repeat="recepient in recepients track by recepient.userid">
-				<div ng-show="recepient.userid != userid">
-					<input id="{{recepient.userid}}" type="radio" name="rcp" value="{{recepient.userid}}" />
-					<label for="{{recepient.userid}}">{{recepient.username}}</label>
+			<div ng-repeat="recepient in recepients track by recepient.userId">
+				<div ng-show="recepient.userId != userId">
+					<input id="{{recepient.userId}}" type="radio" name="rcp" value="{{recepient.userId}}" />
+					<label for="{{recepient.userId}}">{{recepient.username}}</label>
 				</div>
 			</div>
 			

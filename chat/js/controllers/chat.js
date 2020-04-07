@@ -6,7 +6,7 @@ app.controller('Chat', [
 	angular.extend(this, $controller('Base', {$scope: $}));
 	
 	$.constructor = function () {
-		$.userid = '';
+		$.userId = '';
 		$.username = $rootScope.username;	
 		$.users = [];
 		$.recepients = [];
@@ -25,7 +25,7 @@ app.controller('Chat', [
 			})
 			.success(function(data, status, headers, config) {
 				if (data.success) {
-					$.userid = data.userid;
+					$.userId = data.userId;
 					$.initChatService();
 				} else {
 					console.log(data.message);
@@ -41,7 +41,7 @@ app.controller('Chat', [
 			.onLogin($.onLoginAndLogoutHandler)
 			.onLogout($.onLoginAndLogoutHandler)
 			.onChatting($.onChattingHandler)
-			.login($.userid, $.username);
+			.login($.userId, $.username);
 		window.addEventListener("unload", function(e) {
 			if (chatService)
 				chatService.logout();
@@ -59,7 +59,7 @@ app.controller('Chat', [
 		$.currentRcp = checkedRadio ? checkedRadio.value : 'all';
 		
 		chatService.chatting({
-			userid: $.userid,
+			userId: $.userId,
 			username: $.username,
 			content: $.content,
 			recepient: $.currentRcp
@@ -78,7 +78,7 @@ app.controller('Chat', [
 	};
 	
 	$.onChattingHandler = function (data) {
-		data.isMe = $.userid == data.userid;
+		data.isMe = $.userId == data.userId;
 		$.messages.unshift(data);
 		$.$apply();
 	};

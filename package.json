@@ -21,7 +21,7 @@
   },
   "main": "run-server.js",
   "dependencies": {
-    "web-dev-server": "^2.1",
+    "web-dev-server": "^3.0",
     "ws": "^3.3.2"
   }
 }
