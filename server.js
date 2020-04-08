@@ -1,5 +1,5 @@
-//var WebDevServer = require("web-dev-server");
-var WebDevServer = require("../web-dev-server/build/lib/Server");
+var WebDevServer = require("web-dev-server");
+//var WebDevServer = require("../web-dev-server/build/lib/Server");
 
 
 // Create web server instance.
@@ -11,7 +11,7 @@ WebDevServer.Server.CreateNew()
 	// Optional, '127.0.0.1' by default.
 	.SetHostname('127.0.0.1')
 	// Optional, `true` by default to display Errors and directories.
-	.SetDevelopment(false)
+	//.SetDevelopment(false)
 	// Optional, `null` by default, useful for apache proxy modes.
 	//.SetBaseUrl('/chat')
 	// Optional, to prepend any execution before `web-dev-server` module execution.
